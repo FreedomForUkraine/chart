@@ -1,0 +1,48 @@
+appName: ""
+env: ""
+
+replicas: 1
+
+rollingUpdateStrategy:
+  enabled: false
+  maxSurge: 1
+  maxUnavailable: 0
+
+image:
+  repository: ""
+  tag: "latest"
+  pullPolicy: Always
+  containerPort: 80
+
+container:
+  command: []
+  args: []
+  resources:
+    requests:
+      enabled: false
+      cpu: ""
+      memory: ""
+
+initContainer:
+  enabled: false
+  command: []
+  args: []
+
+probe:
+  enabled: false
+  path: "/"
+  port: 80
+  initialDelaySeconds: 3
+  periodSeconds: 30
+
+configmap: {}
+
+service:
+  enabled: false
+  type: NodePort
+  ports:
+    http:
+      externalPort: 80
+      internalPort: 80
+      protocol: TCP
+

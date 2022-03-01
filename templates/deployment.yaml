@@ -1,0 +1,97 @@
+i{{- $name := (printf "%s-%s" .Values.appName .Values.env) -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    app: {{ .Values.appName }}
+    version: "{{ .Values.image.tag }}"
+    release: "{{ .Release.Name }}"
+    env: {{ .Values.env }}
+spec:
+  replicas: {{ .Values.replicas }}
+  {{- if .Values.rollingUpdateStrategy.enabled }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.rollingUpdateStrategy.maxSurge }}
+      maxUnavailable: {{ .Values.rollingUpdateStrategy.maxUnavailable }}
+  {{- end }}
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+      env: {{ .Values.env }}
+      release: "{{ .Release.Name }}"
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+        env: {{ .Values.env }}
+        release: "{{ .Release.Name }}"
+        version: "{{ .Values.image.tag }}"
+      annotations:
+        ad.datadoghq.com/{{ $name }}.logs: '[{"source":"{{ $name }}","service":"{{ $name }}"}]'
+        timestamp: '{{ date "20060102150405" .Release.Time }}' # Just to force rolling update with helm.
+    spec:
+      containers:
+        - name: {{ $name }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.image.containerPort }}
+          {{- if .Values.configmap }}
+          envFrom:
+            - configMapRef:
+                name: {{ $name }}-config
+          {{- end }}
+          {{- if .Values.container.command }}
+          command: {{ .Values.container.command }}
+          {{- end }}
+          {{- if .Values.container.args }}
+          args:
+            {{- range .Values.container.args }}
+            - {{ . }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.container.resources.requests.enabled }}
+          resources:
+            requests:
+              cpu: {{ .Values.container.resources.requests.cpu }}
+              memory: {{ .Values.container.resources.requests.memory }}
+          {{- end }}
+          {{- if .Values.probe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.probe.path }}
+              port: {{ .Values.probe.port }}
+            initialDelaySeconds: {{ .Values.probe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probe.periodSeconds }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.probe.path }}
+              port: {{ .Values.probe.port }}
+            initialDelaySeconds: {{ .Values.probe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probe.periodSeconds }}
+          {{- end }}
+      {{- if .Values.initContainer.enabled }}
+      initContainers:
+        - name: {{ $name }}-init
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.configmap }}
+          envFrom:
+            - configMapRef:
+                name: {{ $name }}-config
+          {{- end }}
+          {{- if .Values.initContainer.command }}
+          command: {{ .Values.initContainer.command }}
+          {{- end }}
+          {{- if .Values.initContainer.args }}
+          args:
+            {{- range .Values.initContainer.args }}
+            - {{ . }}
+            {{- end }}
+          {{- end }}
+      {{- end }}
+

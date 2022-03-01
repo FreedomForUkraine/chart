@@ -1,0 +1,22 @@
+{{- if .Values.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.appName }}-{{ .Values.env }}
+  labels:
+    app: {{ .Values.appName }}
+    env: {{ .Values.env }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ .Values.appName }}
+    env: {{ .Values.env }}
+  ports:
+    {{- range $key, $value := .Values.service.ports }}
+    - name: {{ $key }}
+      port: {{ $value.externalPort }}
+      targetPort: {{ $value.internalPort }}
+      protocol: {{ $value.protocol }}
+    {{- end }}
+{{- end }}
+
