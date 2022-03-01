@@ -46,3 +46,20 @@ service:
       internalPort: 80
       protocol: TCP
 
+ingress:
+  enabled: false
+  hosts: {}
+#    domain.com:
+#      host: domain.com
+#      paths:
+#        root:
+#          path: /
+#          serviceName: service-name
+#          servicePort: 80
+
+autoscaler:
+  enabled: false
+  limits:
+    minReplica: 2
+    maxReplica: 8
+    cpuUtil: 50
