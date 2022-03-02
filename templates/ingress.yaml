@@ -1,23 +1,12 @@
 {{- if .Values.ingress.enabled -}}
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.appName }}
-  {{- with .Values.ingress.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-spec:
-  {{- if .Values.ingress.tls }}
-tls:
-  {{- range .Values.ingress.tls }}
-- hosts:
-  {{- range .hosts }}
-  - {{ . | quote }}
-  {{- end }}
-  secretName: {{ .secretName }}
-  {{- end }}
-  {{- end }}
+labels:
+  app: {{ .Values.appName }}
+  env: {{ .Values.env }}
 rules:
 {{- range .Values.ingress.hosts }}
 - host: {{ .host }}
@@ -33,4 +22,5 @@ rules:
         number: {{ default 80 .servicePort }}
   {{- end }}
 {{- end }}
+
 {{- end }}
