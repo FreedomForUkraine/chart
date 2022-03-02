@@ -1,4 +1,4 @@
-i{{- $name := (printf "%s-%s" .Values.appName .Values.env) -}}
+{{ $name := (printf "%s-%s" .Values.appName .Values.env) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,7 +32,7 @@ spec:
         version: "{{ .Values.image.tag }}"
       annotations:
         ad.datadoghq.com/{{ $name }}.logs: '[{"source":"{{ $name }}","service":"{{ $name }}"}]'
-        timestamp: '{{ date "20060102150405" .Release.Time }}' # Just to force rolling update with helm.
+        timestamp: {{ now | quote }} # Just to force rolling update with helm.
     spec:
       containers:
         - name: {{ $name }}
