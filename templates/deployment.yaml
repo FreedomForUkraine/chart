@@ -1,8 +1,7 @@
-{{ $name := (printf "%s-%s" .Values.appName .Values.env) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $name }}
+  name: {{ .Values.appName }}
   labels:
     app: {{ .Values.appName }}
     version: "{{ .Values.image.tag }}"
@@ -31,11 +30,11 @@ spec:
         release: "{{ .Release.Name }}"
         version: "{{ .Values.image.tag }}"
       annotations:
-        ad.datadoghq.com/{{ $name }}.logs: '[{"source":"{{ $name }}","service":"{{ $name }}"}]'
+        ad.datadoghq.com/{{ .Values.appName }}.logs: '[{"source":"{{ .Values.appName }}","service":"{{ .Values.appName }}"}]'
         timestamp: {{ now | quote }} # Just to force rolling update with helm.
     spec:
       containers:
-        - name: {{ $name }}
+        - name: {{ .Values.appName }}
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -43,7 +42,7 @@ spec:
           {{- if .Values.configmap }}
           envFrom:
             - configMapRef:
-                name: {{ $name }}-config
+                name: {{ .Values.appName }}-config
           {{- end }}
           {{- if .Values.container.command }}
           command: {{ .Values.container.command }}
@@ -83,13 +82,13 @@ spec:
           {{- end }}
       {{- if .Values.initContainer.enabled }}
       initContainers:
-        - name: {{ $name }}-init
+        - name: {{ .Values.appName }}-init
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if .Values.configmap }}
           envFrom:
             - configMapRef:
-                name: {{ $name }}-config
+                name: {{ .Values.appName }}-config
           {{- end }}
           {{- if .Values.initContainer.command }}
           command: {{ .Values.initContainer.command }}
