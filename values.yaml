@@ -48,6 +48,7 @@ service:
 
 ingress:
   enabled: false
+  annotations: {}
   hosts: {}
 #    domain.com:
 #      host: domain.com
