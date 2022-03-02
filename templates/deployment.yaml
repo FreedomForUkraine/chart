@@ -54,11 +54,18 @@ spec:
             - {{ . }}
             {{- end }}
           {{- end }}
-          {{- if .Values.container.resources.requests.enabled }}
+          {{- if or .Values.container.resources.requests .Values.container.resources.limits }}
           resources:
+            {{- if .Values.container.resources.requests }}
             requests:
               cpu: {{ .Values.container.resources.requests.cpu }}
               memory: {{ .Values.container.resources.requests.memory }}
+            {{- end }}
+            {{- if .Values.container.resources.limits }}
+            limits:
+              cpu: {{ .Values.container.resources.limits.cpu }}
+              memory: {{ .Values.container.resources.limits.memory }}
+            {{- end }}
           {{- end }}
           {{- if .Values.probe.enabled }}
           readinessProbe:
